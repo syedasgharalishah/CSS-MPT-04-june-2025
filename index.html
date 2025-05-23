@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS MPT Daily Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom CSS for animations and specific styles not easily done with Tailwind */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA; /* Background color */
+            color: #2C3E50; /* Default text color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            width: 100%;
+            padding: 25px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden; /* For animations */
+        }
+
+        /* Section Divider */
+        .section-divider {
+            height: 5px;
+            background-color: #FFF5EE;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        /* Accent Button Gradient */
+        .btn-accent {
+            background: linear-gradient(to right, #E6E6FA, #FFDAB9);
+            color: #2C3E50;
+            font-weight: bold;
+            border-radius: 10px;
+            padding: 12px 25px;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-accent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Option Card Styles */
+        .option-card {
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border: 1px solid #ddd;
+        }
+
+        .option-card:hover {
+            transform: scale(1.05); /* Grow by 5% */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-card.selected {
+            border-color: #2C3E50;
+            background-color: #e0e0e0;
+        }
+
+        /* Answer Feedback Animations */
+        @keyframes pulse-green {
+            0% { transform: scale(1); background-color: #90EE90; }
+            50% { transform: scale(1.02); background-color: #7CFC00; }
+            100% { transform: scale(1); background-color: #90EE90; }
+        }
+
+        @keyframes shake-red {
+            0%, 100% { transform: translateX(0); background-color: #FF6B6B; }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .option-card.correct {
+            animation: pulse-green 0.6s ease-in-out;
+            background-color: #90EE90; /* Initial correct color */
+            border-color: #008000;
+        }
+
+        .option-card.wrong {
+            animation: shake-red 0.5s ease-in-out;
+            background-color: #FF6B6B; /* Initial wrong color */
+            border-color: #FF0000;
+        }
+
+        /* Progress Bar Animation */
+        .progress-bar-inner {
+            background: linear-gradient(to right, #20B2AA, #3EB489);
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.3s ease-in-out;
+        }
+
+        /* Sticky Date Bar */
+        .sticky-date-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #F8F9FA;
+            padding: 8px 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            color: #6D6875;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            .sticky-date-bar {
+                top: 15px;
+                left: 15px;
+                right: auto;
+            }
+        }
+
+        /* Today's Special Question Border */
+        .special-question-border {
+            border: 3px solid #FFD700; /* Golden border */
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-[#F8F9FA] text-[#2C3E50]">
+
+    <div class="sticky-date-bar">
+        <i class="fas fa-calendar-alt mr-2"></i>
+        <span id="live-date"></span>
+    </div>
+
+    <div class="container bg-white rounded-xl shadow-lg p-6 md:p-10">
+
+        <div id="login-screen" class="flex flex-col items-center justify-center min-h-[400px]">
+            <img src="https://i.ibb.co/tMYHtj6n/480709804-2211254089269599-2819007219717277160-n.jpg" alt="Quiz Logo" class="mb-6 rounded-full shadow-md w-24 h-24 object-cover">
+            <h2 class="text-3xl font-bold mb-6 text-[#2C3E50]">Login to Quiz</h2>
+            <input type="text" id="login-id" placeholder="ID: 23MAY" class="p-3 mb-4 w-full max-w-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#20B2AA] focus:border-transparent">
+            <input type="password" id="login-password" placeholder="Password: free" class="p-3 mb-6 w-full max-w-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#20B2AA] focus:border-transparent">
+            <button id="login-button" class="btn-accent w-full max-w-xs">Login</button>
+        </div>
+
+        <div id="candidate-info-screen" class="hidden flex-col items-center justify-center min-h-[400px]">
+            <img src="https://i.ibb.co/tMYHtj6n/480709804-2211254089269599-2819007219717277160-n.jpg" alt="Quiz Logo" class="mb-6 rounded-full shadow-md w-24 h-24 object-cover">
+            <h2 class="text-3xl font-bold mb-6 text-[#2C3E50]">Enter Your Details</h2>
+            <input type="text" id="candidate-name" placeholder="Full Name" class="p-3 mb-6 w-full max-w-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#20B2AA] focus:border-transparent">
+            <button id="start-quiz-button" class="btn-accent w-full max-w-xs">Start Quiz</button>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div class="text-center mb-6">
+                <img src="https://i.ibb.co/tMYHtj6n/480709804-2211254089269599-2819007219717277160-n.jpg" alt="Quiz Logo" class="mx-auto mb-4 rounded-full shadow-md w-24 h-24 object-cover">
+                <h1 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-2">CSS MPT Daily Quiz – <span id="quiz-date"></span></h1>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                    <div id="progress-bar" class="progress-bar-inner h-2.5 rounded-full" style="width: 0%;"></div>
+                </div>
+                <img src="https://i.ibb.co/tMYHtj6n/480709804-2211254089269599-2819007219717277160-n.jpg" alt="Quiz Banner" class="w-full rounded-lg shadow-md mb-4">
+                <p class="text-sm text-gray-600 mb-2">
+                    <strong class="text-[#2C3E50]">DAWNDIGEST</strong><br>
+                    PREPARED BY: SYED ASGHAR ALI SHAH<br>
+                    Contact: 03265762698
+                </p>
+                <p class="text-xs text-gray-500">Updated on: <span id="updated-date"></span></p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div id="question-container" class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-lg font-semibold">Question <span id="current-q-num">1</span> of 100</p>
+                    <p class="text-lg font-semibold">Time Left: <span id="time-left">40:00</span></p>
+                </div>
+                <div id="question-card" class="bg-white p-6 rounded-xl shadow-md mb-6 transition-all duration-300 ease-in-out">
+                    <p id="question-text" class="text-xl font-medium mb-4"></p>
+                    <div id="options-container" class="grid gap-4">
+                        </div>
+                </div>
+                <div id="explanation-container" class="bg-gray-100 p-4 rounded-lg shadow-inner hidden">
+                    <p class="font-bold mb-2">Explanation:</p>
+                    <p id="explanation-text"></p>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-6">
+                <button id="prev-button" class="btn-accent px-6 py-3" disabled><i class="fas fa-arrow-left mr-2"></i> Previous</button>
+                <button id="next-button" class="btn-accent px-6 py-3">Next <i class="fas fa-arrow-right ml-2"></i></button>
+            </div>
+        </div>
+
+        <div id="results-screen" class="hidden flex-col items-center justify-center min-h-[400px]">
+            <h2 class="text-3xl font-bold mb-6 text-[#2C3E50]">Quiz Results</h2>
+            <div class="bg-white p-8 rounded-xl shadow-md text-center">
+                <p class="text-xl mb-3"><span class="font-bold">Candidate Name:</span> <span id="result-name"></span></p>
+                <p class="text-xl mb-3"><span class="font-bold">Score:</span> <span id="result-score"></span> / 100</p>
+                <p class="text-xl mb-3"><span class="font-bold">Time Taken:</span> <span id="result-time"></span></p>
+                <p class="text-xl mb-6"><span class="font-bold">Questions Attempted:</span> <span id="result-attempted"></span></p>
+                <button id="restart-quiz-button" class="btn-accent">Restart Quiz</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <p id="modal-message" class="text-lg font-semibold mb-4"></p>
+            <button id="modal-ok-button" class="btn-accent">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Utility Functions ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            }
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function showModal(message, callback = null) {
+            const modal = document.getElementById('custom-modal');
+            const modalMessage = document.getElementById('modal-message');
+            const modalOkButton = document.getElementById('modal-ok-button');
+            const modalCloseButton = modal.querySelector('.modal-close');
+
+            modalMessage.textContent = message;
+            modal.style.display = 'flex'; // Use flex to center
+
+            modalOkButton.onclick = () => {
+                modal.style.display = 'none';
+                if (callback) callback();
+            };
+
+            modalCloseButton.onclick = () => {
+                modal.style.display = 'none';
+                if (callback) callback(); // Still call callback if closed
+            };
+        }
+
+        // --- Security Measures ---
+        document.addEventListener('contextmenu', event => event.preventDefault()); // Disable right-click
+        document.addEventListener('copy', event => event.preventDefault()); // Disable copy
+        document.addEventListener('cut', event => event.preventDefault()); // Disable cut
+        document.addEventListener('paste', event => event.preventDefault()); // Disable paste
+
+        document.addEventListener('keydown', event => {
+            // Disable F12, Ctrl+Shift+I, Ctrl+U
+            if (
+                event.key === 'F12' ||
+                (event.ctrlKey && event.shiftKey && event.key === 'I') ||
+                (event.ctrlKey && event.key === 'U')
+            ) {
+                event.preventDefault();
+                showModal("Developer tools and certain shortcuts are disabled for security reasons.");
+            }
+        });
+
+        // --- Quiz Data (Generated MCQs) ---
+        function generateQuizQuestions() {
+            const questions = [];
+            const today = new Date();
+            const todayString = today.toISOString().slice(0, 10); // YYYY-MM-DD
+
+            // Helper to create a question
+            const createQuestion = (questionText, options, correctAnswerIndex, explanation, difficulty) => {
+                const shuffledOptions = [...options];
+                shuffleArray(shuffledOptions);
+                const originalCorrectOption = options[correctAnswerIndex];
+                const newCorrectAnswerIndex = shuffledOptions.indexOf(originalCorrectOption);
+
+                return {
+                    question: questionText,
+                    options: shuffledOptions,
+                    correctAnswerIndex: newCorrectAnswerIndex,
+                    explanation: explanation,
+                    difficulty: difficulty,
+                    answered: false,
+                    selectedOption: -1,
+                    isCorrect: false
+                };
+            };
+
+            // Easy Questions (10)
+            questions.push(createQuestion(
+                "What is the capital of Pakistan?",
+                ["Lahore", "Karachi", "Islamabad", "Rawalpindi"],
+                2,
+                "Islamabad is the capital city of Pakistan.",
+                "easy"
+            ));
+            questions.push(createQuestion(
+                "Which planet is known as the 'Red Planet'?",
+                ["Earth", "Mars", "Jupiter", "Venus"],
+                1,
+                "Mars is often referred to as the 'Red Planet' due to its reddish appearance.",
+                "easy"
+            ));
+            questions.push(createQuestion(
+                "What is the largest ocean on Earth?",
+                ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"],
+                3,
+                "The Pacific Ocean is the largest and deepest of Earth's oceanic divisions.",
+                "easy"
+            ));
+            questions.push(createQuestion(
+                "How many continents are there in the world?",
+                ["5", "6", "7", "8"],
+                2,
+                "There are seven continents: Asia, Africa, North America, South America, Antarctica, Europe, and Australia.",
+                "easy"
+            ));
+            questions.push(createQuestion(
+                "Which gas do plants absorb from the atmosphere?",
+                ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+                2,
+                "Plants absorb carbon dioxide for photosynthesis.",
+                "easy"
+            ));
+            questions.push(createQuestion(
+                "What is the chemical symbol for water?",
+                ["O2", "H2O", "CO2", "N2"],
+                1,
+                "The chemical symbol for water is H2O.",
+                "easy"
+            ));
+            questions.push(createQuestion(
+                "Who painted the Mona Lisa?",
+                ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"],
+                2,
+                "Leonardo da Vinci painted the Mona Lisa.",
+                "easy"
+            ));
+            questions.push(createQuestion(
+                "Which animal is known as the 'Ship of the Desert'?",
+                ["Camel", "Horse", "Elephant", "Lion"],
+                0,
+                "The camel is known as the 'Ship of the Desert' due to its ability to travel long distances in arid conditions.",
+                "easy"
+            ));
+            questions.push(createQuestion(
+                "What is the coldest continent?",
+                ["Asia", "Europe", "Antarctica", "Arctic"],
+                2,
+                "Antarctica is the coldest continent on Earth.",
+                "easy"
+            ));
+            questions.push(createQuestion(
+                "What is the primary language spoken in Brazil?",
+                ["Spanish", "English", "Portuguese", "French"],
+                2,
+                "Portuguese is the official language of Brazil.",
+                "easy"
+            ));
+
+            // Medium Questions (50)
+            // GK (20)
+            questions.push(createQuestion(
+                "Which country is known as the 'Land of the Rising Sun'?",
+                ["China", "South Korea", "Japan", "Thailand"],
+                2,
+                "Japan is traditionally known as the 'Land of the Rising Sun'.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Who wrote 'Pride and Prejudice'?",
+                ["Charlotte Brontë", "Jane Austen", "Emily Brontë", "Mary Shelley"],
+                1,
+                "Jane Austen is the author of the classic novel 'Pride and Prejudice'.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the longest river in the world?",
+                ["Amazon River", "Nile River", "Yangtze River", "Mississippi River"],
+                1,
+                "The Nile River is generally considered the longest river in the world.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which city hosted the 2016 Summer Olympics?",
+                ["London", "Rio de Janeiro", "Beijing", "Athens"],
+                1,
+                "Rio de Janeiro, Brazil, hosted the 2016 Summer Olympics.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the largest desert in the world?",
+                ["Sahara Desert", "Arabian Desert", "Gobi Desert", "Antarctic Polar Desert"],
+                3,
+                "The Antarctic Polar Desert is the largest desert in the world.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which element has the chemical symbol 'Fe'?",
+                ["Fluorine", "Iron", "Fermium", "Francium"],
+                1,
+                "Fe is the chemical symbol for Iron.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "In which year did the Titanic sink?",
+                ["1905", "1912", "1918", "1923"],
+                1,
+                "The RMS Titanic sank on April 15, 1912.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Who is known as the 'Father of Modern Physics'?",
+                ["Isaac Newton", "Albert Einstein", "Galileo Galilei", "Stephen Hawking"],
+                1,
+                "Albert Einstein is widely regarded as the 'Father of Modern Physics'.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the highest mountain peak in North America?",
+                ["Mount Everest", "Mount Kilimanjaro", "Denali (Mount McKinley)", "Mount Elbrus"],
+                2,
+                "Denali, formerly known as Mount McKinley, is the highest peak in North America.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which country is the largest producer of coffee?",
+                ["Colombia", "Vietnam", "Brazil", "Ethiopia"],
+                2,
+                "Brazil is the world's largest producer of coffee.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the main ingredient in guacamole?",
+                ["Tomato", "Onion", "Avocado", "Chili"],
+                2,
+                "Avocado is the main ingredient in guacamole.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which famous scientist developed the theory of relativity?",
+                ["Isaac Newton", "Marie Curie", "Albert Einstein", "Nikola Tesla"],
+                2,
+                "Albert Einstein developed the theory of relativity.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which organ in the human body is responsible for pumping blood?",
+                ["Lungs", "Brain", "Heart", "Kidneys"],
+                2,
+                "The heart is responsible for pumping blood throughout the body.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the currency of Japan?",
+                ["Yuan", "Won", "Yen", "Rupee"],
+                2,
+                "The currency of Japan is the Japanese Yen.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which continent is the Sahara Desert located on?",
+                ["Asia", "Africa", "South America", "Australia"],
+                1,
+                "The Sahara Desert is located on the continent of Africa.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the process by which plants make their own food?",
+                ["Respiration", "Transpiration", "Photosynthesis", "Germination"],
+                2,
+                "Photosynthesis is the process by which green plants and some other organisms use sunlight to synthesize foods.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Who was the first person to step on the moon?",
+                ["Buzz Aldrin", "Yuri Gagarin", "Neil Armstrong", "Michael Collins"],
+                2,
+                "Neil Armstrong was the first person to step on the moon.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which country is famous for the Great Wall?",
+                ["India", "Japan", "China", "Egypt"],
+                2,
+                "China is famous for the Great Wall.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the largest mammal in the world?",
+                ["African Elephant", "Blue Whale", "Giraffe", "Polar Bear"],
+                1,
+                "The Blue Whale is the largest mammal on Earth.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which gas makes up the majority of Earth's atmosphere?",
+                ["Oxygen", "Carbon Dioxide", "Nitrogen", "Argon"],
+                2,
+                "Nitrogen makes up about 78% of Earth's atmosphere.",
+                "medium"
+            ));
+
+            // English (15)
+            questions.push(createQuestion(
+                "Choose the correct synonym for 'benevolent'.",
+                ["Cruel", "Kind", "Angry", "Lazy"],
+                1,
+                "Benevolent means well meaning and kindly.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Identify the antonym of 'fragile'.",
+                ["Delicate", "Strong", "Brittle", "Weak"],
+                1,
+                "Fragile means easily broken or damaged, so its antonym is strong.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Complete the sentence: 'She is ______ than her sister.'",
+                ["tall", "taller", "tallest", "more tall"],
+                1,
+                "When comparing two people, 'taller' is the correct comparative form.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which word means 'a sudden, violent, and illegal seizure of power from a government'?",
+                ["Revolution", "Coup", "Protest", "Election"],
+                1,
+                "A coup is a sudden, violent, and illegal seizure of power.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Find the word that is spelled correctly:",
+                ["Seperate", "Separate", "Seperate", "Seperatte"],
+                1,
+                "The correct spelling is 'Separate'.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the plural of 'child'?",
+                ["Childs", "Children", "Childes", "Child's"],
+                1,
+                "The plural of 'child' is 'children'.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which of the following is a collective noun for a group of lions?",
+                ["Herd", "Pack", "Pride", "Flock"],
+                2,
+                "A group of lions is called a pride.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Choose the correct sentence:",
+                ["He don't like apples.", "He doesn't like apples.", "He not like apples.", "He do not like apples."],
+                1,
+                "For third person singular (He, She, It), 'doesn't' is used.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the past tense of 'go'?",
+                ["Goes", "Gone", "Went", "Going"],
+                2,
+                "The past tense of 'go' is 'went'.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Select the word that best completes the analogy: 'Hot is to Cold as Light is to ______'",
+                ["Bright", "Dark", "Heavy", "Warm"],
+                1,
+                "Light is the opposite of dark, just as hot is the opposite of cold.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which punctuation mark is used to indicate a pause or break in a sentence?",
+                ["Period", "Comma", "Question Mark", "Exclamation Mark"],
+                1,
+                "A comma is used to indicate a pause or break.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Identify the adverb in the sentence: 'She sings beautifully.'",
+                ["She", "sings", "beautifully", "sings beautifully"],
+                2,
+                "An adverb modifies a verb, adjective, or another adverb. 'Beautifully' describes how she sings.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the meaning of the idiom 'break a leg'?",
+                ["To injure oneself", "To fall down", "Good luck", "To run fast"],
+                2,
+                "'Break a leg' is an idiom meaning 'good luck'.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which word is a preposition?",
+                ["Run", "Quickly", "Under", "Happy"],
+                2,
+                "A preposition shows the relationship between a noun/pronoun and other words in a sentence. 'Under' is a preposition.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Choose the correct form of the verb: 'They ______ playing football.'",
+                ["is", "am", "are", "be"],
+                2,
+                "For plural subjects like 'They', 'are' is the correct form of 'to be'.",
+                "medium"
+            ));
+
+            // General Abilities (15)
+            questions.push(createQuestion(
+                "If A is to B as 1 is to 2, then C is to D as 3 is to ______.",
+                ["4", "5", "6", "7"],
+                0,
+                "The pattern is consecutive numbers, so 3 is to 4.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which number comes next in the sequence: 2, 4, 6, 8, __?",
+                ["9", "10", "11", "12"],
+                1,
+                "This is a sequence of even numbers, so the next number is 10.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "If all cats are animals, and all animals eat food, then all cats eat food. This is an example of:",
+                ["Deductive reasoning", "Inductive reasoning", "Abductive reasoning", "Analogical reasoning"],
+                0,
+                "This is deductive reasoning, moving from general premises to a specific conclusion.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which word does not belong: Apple, Banana, Carrot, Orange?",
+                ["Apple", "Banana", "Carrot", "Orange"],
+                2,
+                "Carrot is a vegetable, while the others are fruits.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "If a car travels at 60 km/h, how long will it take to travel 180 km?",
+                ["2 hours", "3 hours", "4 hours", "5 hours"],
+                1,
+                "Time = Distance / Speed. 180 km / 60 km/h = 3 hours.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the next letter in the series: A, C, E, G, __?",
+                ["H", "I", "J", "K"],
+                1,
+                "The series follows alternate letters of the alphabet.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "If 'BAT' is coded as '2120', how is 'CAT' coded?",
+                ["3120", "3119", "2120", "4120"],
+                0,
+                "Each letter is replaced by its position in the alphabet (A=1, B=2, C=3...). So C=3, A=1, T=20.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which figure completes the sequence: Circle, Square, Triangle, Circle, Square, __?",
+                ["Square", "Triangle", "Circle", "Rectangle"],
+                1,
+                "The sequence repeats: Circle, Square, Triangle.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which number is the odd one out: 2, 3, 5, 7, 9, 11?",
+                ["2", "5", "9", "11"],
+                2,
+                "All numbers except 9 are prime numbers.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "If 'dog' is to 'bark' as 'cat' is to '______'?",
+                ["Meow", "Roar", "Chirp", "Howl"],
+                0,
+                "Dogs bark, and cats meow.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is 25% of 200?",
+                ["25", "50", "75", "100"],
+                1,
+                "25% of 200 is (25/100) * 200 = 50.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which of the following is not a primary color?",
+                ["Red", "Yellow", "Green", "Blue"],
+                2,
+                "Primary colors are Red, Yellow, and Blue. Green is a secondary color.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "If a clock shows 3:00, what angle is formed between the hour and minute hands?",
+                ["0 degrees", "30 degrees", "60 degrees", "90 degrees"],
+                3,
+                "At 3:00, the hour hand is on 3 and the minute hand is on 12, forming a 90-degree angle.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What comes next in the series: J, F, M, A, M, J, J, A, S, O, N, __?",
+                ["P", "D", "E", "C"],
+                1,
+                "These are the first letters of the months of the year (January, February, March...). The next is December.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "If 'book' is to 'library' as 'doctor' is to '______'?",
+                ["School", "Hospital", "Shop", "Farm"],
+                1,
+                "Books are found in a library, and doctors work in a hospital.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "Which number is missing: 1, 4, 9, __, 25, 36?",
+                ["12", "16", "20", "22"],
+                1,
+                "This is a sequence of perfect squares: 1^2, 2^2, 3^2, 4^2, 5^2, 6^2. So 4^2 = 16.",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "If 'north' is 'south-east', what is 'west'?",
+                ["North-east", "South-west", "North-west", "South-east"],
+                0,
+                "This is a 135-degree clockwise rotation. North (0) -> South-East (135). West (270) -> North-East (45).",
+                "medium"
+            ));
+            questions.push(createQuestion(
+                "What is the average of 10, 20, and 30?",
+                ["15", "20", "25", "30"],
+                1,
+                "Average = (10+20+30)/3 = 60/3 = 20.",
+                "medium"
+            ));
+
+            // Tough Questions (40 total, including the special question)
+            // GK (15)
+            questions.push(createQuestion(
+                "Which treaty officially ended World War I?",
+                ["Treaty of Versailles", "Treaty of Paris", "Treaty of Trianon", "Treaty of Brest-Litovsk"],
+                0,
+                "The Treaty of Versailles was signed on June 28, 1919, officially ending World War I.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Who was the first female Prime Minister of a Muslim country?",
+                ["Benazir Bhutto", "Indira Gandhi", "Golda Meir", "Margaret Thatcher"],
+                0,
+                "Benazir Bhutto of Pakistan was the first female Prime Minister of a Muslim country.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "What is the deepest point in the Earth's oceans?",
+                ["Puerto Rico Trench", "Java Trench", "Mariana Trench", "Kermadec Trench"],
+                2,
+                "The Mariana Trench, specifically the Challenger Deep, is the deepest known point in the Earth's oceans.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which philosopher is associated with the concept of the 'Categorical Imperative'?",
+                ["Plato", "Aristotle", "Immanuel Kant", "Friedrich Nietzsche"],
+                2,
+                "Immanuel Kant is the philosopher who introduced the concept of the 'Categorical Imperative'.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "The 'Ring of Fire' is a major area in the basin of which ocean, where a large number of earthquakes and volcanic eruptions occur?",
+                ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"],
+                3,
+                "The 'Ring of Fire' is located in the basin of the Pacific Ocean.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Who developed the first successful polio vaccine?",
+                ["Louis Pasteur", "Robert Koch", "Jonas Salk", "Alexander Fleming"],
+                2,
+                "Jonas Salk developed the first effective polio vaccine.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which ancient civilization built the city of Machu Picchu?",
+                ["Aztec", "Maya", "Inca", "Egyptian"],
+                2,
+                "The Inca civilization built the historic citadel of Machu Picchu.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "The term 'Iron Curtain' was coined by which statesman?",
+                ["Winston Churchill", "Franklin D. Roosevelt", "Harry S. Truman", "Joseph Stalin"],
+                0,
+                "Winston Churchill popularized the term 'Iron Curtain' in his 1946 speech.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which international organization was awarded the Nobel Peace Prize in 2012 for its efforts to advance peace and reconciliation, democracy and human rights?",
+                ["United Nations", "European Union", "NATO", "African Union"],
+                1,
+                "The European Union was awarded the Nobel Peace Prize in 2012.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "What is the primary function of the World Trade Organization (WTO)?",
+                ["Providing humanitarian aid", "Promoting international trade", "Maintaining global peace", "Regulating international currency"],
+                1,
+                "The WTO's primary function is to promote and facilitate international trade.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which historical event is associated with the storming of the Bastille?",
+                ["American Revolution", "French Revolution", "Russian Revolution", "Glorious Revolution"],
+                1,
+                "The storming of the Bastille on July 14, 1789, is a pivotal event in the French Revolution.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Who is credited with inventing the printing press?",
+                ["Gutenberg", "Edison", "Bell", "Franklin"],
+                0,
+                "Johannes Gutenberg is credited with inventing the movable type printing press.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which country is the largest by land area?",
+                ["Canada", "China", "Russia", "United States"],
+                2,
+                "Russia is the largest country by land area.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "The term 'Cold War' primarily refers to the geopolitical tension between which two blocs after World War II?",
+                ["NATO and Warsaw Pact", "Axis and Allies", "East and West Germany", "USA and China"],
+                0,
+                "The Cold War was primarily a geopolitical rivalry between the US-led NATO and the Soviet-led Warsaw Pact.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "What is the capital of Australia?",
+                ["Sydney", "Melbourne", "Canberra", "Perth"],
+                2,
+                "The capital of Australia is Canberra.",
+                "tough"
+            ));
+
+            // English (15)
+            questions.push(createQuestion(
+                "Identify the figure of speech: 'The silence was deafening.'",
+                ["Metaphor", "Simile", "Oxymoron", "Hyperbole"],
+                2,
+                "Oxymoron is a figure of speech in which apparently contradictory terms appear in conjunction.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which of the following is a synonym for 'ubiquitous'?",
+                ["Rare", "Scarce", "Omnipresent", "Limited"],
+                2,
+                "Ubiquitous means present, appearing, or found everywhere.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Choose the sentence with the correct use of the subjunctive mood:",
+                ["If I was a bird, I would fly.", "If I were a bird, I would fly.", "If I am a bird, I would fly.", "If I be a bird, I would fly."],
+                1,
+                "The subjunctive mood uses 'were' for hypothetical or contrary-to-fact statements.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "What is the meaning of 'ephemeral'?",
+                ["Long-lasting", "Permanent", "Fleeting", "Eternal"],
+                2,
+                "Ephemeral means lasting for a very short time.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which word best completes the sentence: 'The committee members were ______ in their decision.'",
+                ["unanimous", "diverse", "divided", "hesitant"],
+                0,
+                "Unanimous means fully in agreement.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Identify the type of fallacy: 'You're either with us or against us.'",
+                ["Ad Hominem", "Straw Man", "False Dilemma", "Slippery Slope"],
+                2,
+                "False Dilemma (or false dichotomy) presents only two options as if they are the only possibilities.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "What is the correct definition of 'plethora'?",
+                ["Scarcity", "Lack", "Abundance", "Deficiency"],
+                2,
+                "Plethora means a large or excessive amount of something.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which word is an example of an onomatopoeia?",
+                ["Whisper", "Silence", "Buzz", "Speak"],
+                2,
+                "Onomatopoeia is the formation of a word from a sound associated with what is named (e.g., cuckoo, sizzle). 'Buzz' mimics a sound.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Choose the sentence with the correct parallel structure:",
+                ["She likes to swim, to run, and cycling.", "She likes to swim, to run, and to cycle.", "She likes swimming, running, and to cycle.", "She likes to swim, running, and cycling."],
+                1,
+                "Parallel structure requires consistent grammatical form. 'To swim, to run, and to cycle' maintains infinitive form.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "What is the meaning of 'gregarious'?",
+                ["Shy", "Reserved", "Sociable", "Aggressive"],
+                2,
+                "Gregarious means fond of company; sociable.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which literary device involves a contrast between what is said and what is actually meant?",
+                ["Metaphor", "Simile", "Irony", "Allusion"],
+                2,
+                "Irony is a literary device where the intended meaning is different from the literal meaning.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Select the sentence where 'affect' is used correctly:",
+                ["The weather will effect your mood.", "The weather will affect your mood.", "The effect of the weather was good.", "The affect was good."],
+                1,
+                "'Affect' is typically a verb (to influence), while 'effect' is typically a noun (a result).",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "What is the meaning of 'cacophony'?",
+                ["A pleasant sound", "A harsh, discordant mixture of sounds", "A soft melody", "A quiet whisper"],
+                1,
+                "Cacophony refers to a harsh, discordant mixture of sounds.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which of the following is an example of a compound-complex sentence?",
+                ["She sang and he danced.", "Although she was tired, she continued to work, and she finished the project.", "He ran quickly.", "Because it was raining, we stayed inside."],
+                1,
+                "A compound-complex sentence has at least two independent clauses and at least one dependent clause.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "What is the meaning of 'parsimonious'?",
+                ["Generous", "Extravagant", "Stingy", "Wasteful"],
+                2,
+                "Parsimonious means unwilling to spend money or use resources; stingy or frugal.",
+                "tough"
+            ));
+
+            // General Abilities (10)
+            questions.push(createQuestion(
+                "If 'EAT' is coded as '318' and 'CHAIR' is coded as '241918', how is 'TABLE' coded?",
+                ["201215", "2012112", "20121125", "20121125"],
+                2,
+                "Each letter is replaced by its position in the alphabet (A=1, B=2, C=3...). T=20, A=1, B=2, L=12, E=5. So 20121125.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "A is the father of B. C is the daughter of B. D is the brother of B. E is the son of A. Who is the uncle of C?",
+                ["A", "B", "D", "E"],
+                2,
+                "D is B's brother. C is B's daughter. Therefore, D is C's uncle.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Find the missing number: 1, 8, 27, ?, 125, 216",
+                ["36", "49", "64", "81"],
+                2,
+                "This is a sequence of perfect cubes: 1^3, 2^3, 3^3, 4^3, 5^3, 6^3. So 4^3 = 64.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "If 5 men can do a piece of work in 10 days, how many days will 10 men take to do the same work?",
+                ["2 days", "3 days", "4 days", "5 days"],
+                3,
+                "This is an inverse proportion problem. (Men1 * Days1) = (Men2 * Days2). (5 * 10) = (10 * Days2). 50 = 10 * Days2. Days2 = 5.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which of the following is the smallest prime number?",
+                ["0", "1", "2", "3"],
+                2,
+                "A prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself. The smallest prime number is 2.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "A train 100 meters long is moving at a speed of 45 km/h. How long will it take to cross a pole?",
+                ["7 seconds", "8 seconds", "9 seconds", "10 seconds"],
+                1,
+                "Speed = 45 km/h = 45 * (5/18) m/s = 12.5 m/s. Time = Distance / Speed = 100m / 12.5 m/s = 8 seconds.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "If a clock loses 2 minutes every hour, how much time will it lose in 24 hours?",
+                ["24 minutes", "36 minutes", "48 minutes", "60 minutes"],
+                2,
+                "2 minutes/hour * 24 hours = 48 minutes.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "What is the sum of the first 10 natural numbers?",
+                ["45", "50", "55", "60"],
+                2,
+                "The sum of the first n natural numbers is n*(n+1)/2. So, 10*(10+1)/2 = 10*11/2 = 55.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "A bag contains 3 red balls and 5 blue balls. If one ball is drawn at random, what is the probability that it is red?",
+                ["3/5", "5/8", "3/8", "1/2"],
+                2,
+                "Total balls = 3 + 5 = 8. Number of red balls = 3. Probability of drawing a red ball = 3/8.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "If 1/4 of a number is 12, what is 3/4 of that number?",
+                ["16", "24", "36", "48"],
+                2,
+                "If 1/4 of a number is 12, the number is 12 * 4 = 48. Then 3/4 of 48 is (3/4) * 48 = 3 * 12 = 36.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "A, B, C, D, E are sitting in a row. C is to the immediate left of D. B is to the immediate right of E. A is to the left of E. Who is in the middle?",
+                ["A", "B", "C", "E"],
+                3,
+                "Order: A E B C D. E is in the middle.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which country is the only one to have won the FIFA World Cup five times?",
+                ["Germany", "Italy", "Brazil", "Argentina"],
+                2,
+                "Brazil has won the FIFA World Cup a record five times.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "The term 'Renaissance' literally means what?",
+                ["Rebirth", "Revolution", "Reform", "Revival"],
+                0,
+                "Renaissance is a French word meaning 'rebirth'.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which of these is NOT one of the seven wonders of the ancient world?",
+                ["Great Pyramid of Giza", "Colossus of Rhodes", "Eiffel Tower", "Hanging Gardens of Babylon"],
+                2,
+                "The Eiffel Tower is a modern structure, not one of the ancient wonders.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "In which year did Pakistan gain independence?",
+                ["1945", "1947", "1948", "1950"],
+                1,
+                "Pakistan gained independence on August 14, 1947.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Who was the founder of the Mughal Empire in India?",
+                ["Akbar", "Humayun", "Babur", "Shah Jahan"],
+                2,
+                "Babur founded the Mughal Empire in India.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "What is the literary term for a long narrative poem, typically one about heroic deeds and events significant to a nation or culture?",
+                ["Sonnet", "Lyric", "Epic", "Ballad"],
+                2,
+                "An epic is a long narrative poem about heroic deeds.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which of the following is an example of a rhetorical question?",
+                ["What time is it?", "Are you coming to the party?", "Who knows?", "Please close the door."],
+                2,
+                "A rhetorical question is asked merely for effect with no answer expected.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Identify the correct usage of 'its' or 'it's': 'The dog wagged ______ tail.'",
+                ["its", "it's", "it is", "its'"],
+                0,
+                "'Its' is a possessive pronoun. 'It's' is a contraction of 'it is' or 'it has'.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "What is the term for the repetition of an initial consonant sound in multiple words in a phrase?",
+                ["Assonance", "Consonance", "Alliteration", "Onomatopoeia"],
+                2,
+                "Alliteration is the repetition of an initial consonant sound in multiple words.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "Which word means 'to make something less severe, serious, or painful'?",
+                ["Aggravate", "Exacerbate", "Mitigate", "Intensify"],
+                2,
+                "Mitigate means to make something less severe.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "In a certain code, 'APPLE' is written as 'BQQMF'. How is 'ORANGE' written in that code?",
+                ["PSBOHF", "PSBOHE", "PSBPHE", "PSBPHF"],
+                0,
+                "Each letter is shifted one position forward in the alphabet. A+1=B, P+1=Q, P+1=Q, L+1=M, E+1=F. So O+1=P, R+1=S, A+1=B, N+1=O, G+1=H, E+1=F. So PSBOHF.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "A sum of money doubles itself in 8 years at simple interest. In how many years will it become three times itself?",
+                ["12 years", "16 years", "20 years", "24 years"],
+                1,
+                "If it doubles (100% interest) in 8 years, then to become three times (200% interest), it will take 2 * 8 = 16 years.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "A student walks from his house at 5 km/h and reaches his school 10 minutes late. If he walks at 6 km/h, he reaches 5 minutes early. Find the distance of the school from his house.",
+                ["5 km", "6 km", "7.5 km", "8 km"],
+                2,
+                "Let D be the distance and T be the scheduled time in hours. D/5 = T + 10/60 (late); D/6 = T - 5/60 (early). Subtracting: D/5 - D/6 = (10+5)/60. D/30 = 15/60. D/30 = 1/4. D = 30/4 = 7.5 km.",
+                "tough"
+            ));
+            questions.push(createQuestion(
+                "A cube has all its faces painted. It is then cut into 64 smaller cubes of the same size. How many of the smaller cubes have exactly two faces painted?",
+                ["8", "12", "24", "36"],
+                2,
+                "A cube cut into 64 smaller cubes means it's a 4x4x4 cube (since 4*4*4=64). Cubes with exactly two faces painted are along the edges, excluding the corner cubes. Each edge has (n-2) such cubes, where n=4. So, (4-2) = 2 cubes per edge. There are 12 edges in a cube. So, 12 * 2 = 24 cubes.",
+                "tough"
+            ));
+
+            // Today's Special Question (ensure it's one of the tough ones)
+            const specialQuestion = createQuestion(
+                "What is the name of the first artificial satellite launched into space?",
+                ["Explorer 1", "Sputnik 1", "Vanguard 1", "Luna 1"],
+                1,
+                "Sputnik 1 was the first artificial Earth satellite. It was launched into an elliptical low Earth orbit by the Soviet Union on 4 October 1957.",
+                "tough"
+            );
+            specialQuestion.isSpecial = true;
+            questions.push(specialQuestion); // Add it to the list
+
+            // Pad remaining questions to reach 100 if needed (mix of medium/tough)
+            while (questions.length < 100) {
+                // Add more medium/tough questions to reach 100
+                questions.push(createQuestion(
+                    `Additional Question ${questions.length + 1}`,
+                    ["Option A", "Option B", "Option C", "Option D"],
+                    0,
+                    "This is an additional question explanation to ensure 100 questions.",
+                    (questions.length % 2 === 0) ? "medium" : "tough"
+                ));
+            }
+
+            // Ensure exactly 100 questions
+            if (questions.length > 100) {
+                questions.splice(100); // Trim if somehow over
+            } else if (questions.length < 100) {
+                // This shouldn't happen with the while loop, but as a safeguard
+                console.warn("Less than 100 questions generated. Padding with generic questions.");
+                while (questions.length < 100) {
+                    questions.push(createQuestion(
+                        `Generic Filler Question ${questions.length + 1}`,
+                        ["Option A", "Option B", "Option C", "Option D"],
+                        0,
+                        "This is a generic filler question to reach the 100 question count.",
+                        "medium"
+                    ));
+                }
+            }
+
+
+            // Shuffle the entire array of questions for unique order
+            shuffleArray(questions);
+
+            // Apply "Surprise Me" mode for 30% of users (randomize order again)
+            if (Math.random() < 0.3) {
+                shuffleArray(questions);
+            }
+
+            return questions;
+        }
+
+        let quizData = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeRemaining = 40 * 60; // 40 minutes in seconds
+        let timerInterval;
+        let userName = '';
+        let quizStartTime;
+        let attemptedQuestionsCount = 0;
+
+        // --- DOM Elements ---
+        const loginScreen = document.getElementById('login-screen');
+        const candidateInfoScreen = document.getElementById('candidate-info-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+
+        const loginIdInput = document.getElementById('login-id');
+        const loginPasswordInput = document.getElementById('login-password');
+        const loginButton = document.getElementById('login-button');
+        const candidateNameInput = document.getElementById('candidate-name');
+        const startQuizButton = document.getElementById('start-quiz-button');
+
+        const liveDateSpan = document.getElementById('live-date');
+        const quizDateSpan = document.getElementById('quiz-date');
+        const updatedDateSpan = document.getElementById('updated-date');
+        const progressBar = document.getElementById('progress-bar');
+        const currentQNumSpan = document.getElementById('current-q-num');
+        const timeLeftSpan = document.getElementById('time-left');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const explanationContainer = document.getElementById('explanation-container');
+        const explanationText = document.getElementById('explanation-text');
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+
+        const resultNameSpan = document.getElementById('result-name');
+        const resultScoreSpan = document.getElementById('result-score');
+        const resultTimeSpan = document.getElementById('result-time');
+        const resultAttemptedSpan = document.getElementById('result-attempted');
+        const restartQuizButton = document.getElementById('restart-quiz-button');
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDates();
+            loginScreen.classList.remove('hidden');
+            loginScreen.classList.add('flex');
+        });
+
+        function updateDates() {
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = today.toLocaleDateString('en-US', options);
+            liveDateSpan.textContent = formattedDate;
+            quizDateSpan.textContent = formattedDate;
+            updatedDateSpan.textContent = formattedDate;
+        }
+
+        // --- Login Logic ---
+        loginButton.addEventListener('click', () => {
+            const id = loginIdInput.value;
+            const password = loginPasswordInput.value;
+
+            if (id === '23MAY' && password === 'free') {
+                loginScreen.classList.add('hidden');
+                loginScreen.classList.remove('flex');
+                candidateInfoScreen.classList.remove('hidden');
+                candidateInfoScreen.classList.add('flex');
+            } else {
+                showModal("Invalid ID or Password. Please try again.");
+            }
+        });
+
+        startQuizButton.addEventListener('click', () => {
+            userName = candidateNameInput.value.trim();
+            if (userName) {
+                candidateInfoScreen.classList.add('hidden');
+                candidateInfoScreen.classList.remove('flex');
+                quizScreen.classList.remove('hidden');
+                startQuiz();
+            } else {
+                showModal("Please enter your full name to start the quiz.");
+            }
+        });
+
+        // --- Quiz Functions ---
+        function startQuiz() {
+            quizData = generateQuizQuestions(); // Generate questions
+            currentQuestionIndex = 0;
+            score = 0;
+            timeRemaining = 40 * 60; // Reset timer
+            attemptedQuestionsCount = 0;
+            quizStartTime = new Date();
+
+            startTimer();
+            displayQuestion(currentQuestionIndex);
+            updateProgressBar();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval); // Clear any existing timer
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                timeLeftSpan.textContent = formatTime(timeRemaining);
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    showModal("Time's up! The quiz will now be submitted.", submitQuiz);
+                }
+            }, 1000);
+        }
+
+        function displayQuestion(index) {
+            const question = quizData[index];
+            currentQNumSpan.textContent = index + 1;
+            questionText.textContent = question.question;
+            optionsContainer.innerHTML = ''; // Clear previous options
+            explanationContainer.classList.add('hidden'); // Hide explanation initially
+            explanationText.textContent = '';
+
+            // Add golden border for Today's Special Question if it's today
+            const questionCard = document.getElementById('question-card');
+            const today = new Date();
+            const isToday = (today.toISOString().slice(0, 10) === new Date().toISOString().slice(0, 10)); // Check if quiz is taken on today's date
+            if (question.isSpecial && isToday) {
+                questionCard.classList.add('special-question-border');
+            } else {
+                questionCard.classList.remove('special-question-border');
+            }
+
+
+            question.options.forEach((option, i) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.classList.add('option-card', 'text-left');
+                optionDiv.textContent = option;
+                optionDiv.dataset.index = i;
+
+                // Restore selected state if already answered
+                if (question.answered && question.selectedOption === i) {
+                    optionDiv.classList.add('selected');
+                    if (question.isCorrect) {
+                        optionDiv.classList.add('correct');
+                    } else {
+                        optionDiv.classList.add('wrong');
+                    }
+                    // Show explanation if already answered
+                    explanationText.textContent = question.explanation;
+                    explanationContainer.classList.remove('hidden');
+                } else if (question.answered && question.correctAnswerIndex === i) {
+                     // Always show correct answer if question is answered
+                    optionDiv.classList.add('correct');
+                }
+
+
+                // Disable clicks if already answered
+                if (question.answered) {
+                    optionDiv.style.pointerEvents = 'none';
+                } else {
+                    optionDiv.addEventListener('click', () => selectOption(i));
+                }
+
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            updateNavigationButtons();
+        }
+
+        function selectOption(selectedOptionIndex) {
+            const question = quizData[currentQuestionIndex];
+            if (question.answered) return; // Prevent re-answering
+
+            question.selectedOption = selectedOptionIndex;
+            question.answered = true;
+            attemptedQuestionsCount++;
+
+            const optionCards = optionsContainer.querySelectorAll('.option-card');
+            optionCards.forEach((card, i) => {
+                card.style.pointerEvents = 'none'; // Disable further clicks
+                if (i === selectedOptionIndex) {
+                    card.classList.add('selected');
+                }
+            });
+
+            if (selectedOptionIndex === question.correctAnswerIndex) {
+                score++;
+                question.isCorrect = true;
+                optionCards[selectedOptionIndex].classList.add('correct');
+            } else {
+                question.isCorrect = false;
+                optionCards[selectedOptionIndex].classList.add('wrong');
+                // Highlight the correct answer if a wrong option was chosen
+                optionCards[question.correctAnswerIndex].classList.add('correct');
+            }
+
+            explanationText.textContent = question.explanation;
+            explanationContainer.classList.remove('hidden');
+            updateProgressBar();
+        }
+
+        function updateProgressBar() {
+            const progress = (attemptedQuestionsCount / quizData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function updateNavigationButtons() {
+            prevButton.disabled = currentQuestionIndex === 0;
+            nextButton.textContent = currentQuestionIndex === quizData.length - 1 ? 'Submit Quiz' : 'Next';
+            nextButton.innerHTML = currentQuestionIndex === quizData.length - 1 ? 'Submit Quiz <i class="fas fa-check-circle ml-2"></i>' : 'Next <i class="fas fa-arrow-right ml-2"></i>';
+        }
+
+        nextButton.addEventListener('click', () => {
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion(currentQuestionIndex);
+            } else {
+                // Last question, submit quiz
+                showModal("Are you sure you want to submit the quiz?", submitQuiz);
+            }
+        });
+
+        prevButton.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion(currentQuestionIndex);
+            }
+        });
+
+        function submitQuiz() {
+            clearInterval(timerInterval); // Stop the timer
+            const quizEndTime = new Date();
+            const totalTimeTakenSeconds = Math.floor((quizEndTime - quizStartTime) / 1000);
+
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            resultsScreen.classList.add('flex');
+
+            resultNameSpan.textContent = userName;
+            resultScoreSpan.textContent = score;
+            resultTimeSpan.textContent = formatTime(totalTimeTakenSeconds);
+            resultAttemptedSpan.textContent = attemptedQuestionsCount;
+
+            // Auto-submit data to Formspree
+            const formData = new FormData();
+            formData.append('Candidate Name', userName);
+            formData.append('Score', `${score} / 100`);
+            formData.append('Time Taken', formatTime(totalTimeTakenSeconds));
+            formData.append('Questions Attempted', attemptedQuestionsCount);
+
+            fetch("https://formspree.io/f/xwpvddea", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log("Quiz data submitted successfully!");
+                } else {
+                    response.json().then(data => {
+                        if (Object.hasOwnProperty.call(data, 'errors')) {
+                            console.error("Formspree errors:", data["errors"].map(error => error["message"]).join(", "));
+                        } else {
+                            console.error("Formspree submission failed.");
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error submitting quiz data:", error);
+            });
+        }
+
+        restartQuizButton.addEventListener('click', () => {
+            resultsScreen.classList.add('hidden');
+            resultsScreen.classList.remove('flex');
+            loginScreen.classList.remove('hidden');
+            loginScreen.classList.add('flex');
+            // Reset inputs
+            loginIdInput.value = '';
+            loginPasswordInput.value = '';
+            candidateNameInput.value = '';
+        });
+
+        // --- Mobile Swipe for Options (Conceptual, requires more complex touch handling) ---
+        // This is a placeholder as full swipeable cards would require a more robust library
+        // or significant custom touch event handling for each option, which is outside
+        // the scope of a single HTML file without a framework.
+        // For now, the responsive grid layout provides a good mobile experience.
+        // If actual swipe functionality is critical, a dedicated JS library would be recommended.
+
+    </script>
+</body>
+</html>
